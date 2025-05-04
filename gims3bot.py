@@ -4,6 +4,7 @@ from datetime import datetime
 from telegram import Update, ReplyKeyboardMarkup
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, ContextTypes, filters
 
+
 # Список челенджів
 challenges = [
     "Пройди 8000 кроків сьогодні!",
@@ -94,3 +95,7 @@ app.add_handler(CommandHandler("start", start))
 app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
 
 app.run_polling()
+
+
+app = ApplicationBuilder().token('7938270207:AAHUYWrqzNBv5DuoY6KsfJ7vDBF2GJ4dRjA').build()
+app.run_polling()  # This will handle updates by polling the server.
