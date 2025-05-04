@@ -73,21 +73,23 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 # Обробка кнопок
 # Обробка кнопок з постійним меню
+# Обробка кнопок
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = update.message.text
     if text == "🕒 Робота":
         day = ua_days[datetime.now().strftime("%A")]
-        response = f"📅 Сьогодні: {day}\n🕒 {get_work_schedule()}"
+        await update.message.reply_text(f"📅 Сьогодні: {day}\n🕒 {get_work_schedule()}")
     elif text == "🚍 Автобус":
-        response = get_bus_time()
+        await update.message.reply_text(get_bus_time())
     elif text == "👩‍⚕️ Чергування":
-        response = get_shift()
+        await update.message.reply_text(get_shift())
     elif text == "💬 Цитата":
-        response = random.choice(quotes)
+        await update.message.reply_text(random.choice(quotes))
     elif text == "💪 Челендж":
-        response = random.choice(challenges)
+        await update.message.reply_text(random.choice(challenges))
     else:
-        response = "Я не зрозумів 🧐 Обери щось із меню."
+        await update.message.reply_text("Я не зрозумів 🧐 Обери щось із меню.")
+
 
     await update.message.reply_text(response, reply_markup=main_menu)
 
