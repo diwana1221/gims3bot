@@ -1,88 +1,48 @@
+import os
 import random
 from datetime import datetime
-from telegram import Update
-from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
-
-# Список челенджів
-challenges = [
-    "Пройди 8000 кроків сьогодні!",
-    "Не користуйся соцмережами 2 години.",
-    "Зроби 10 хвилин фізичних вправ.",
-    "Прочитай 5 сторінок книги.",
-    "Подзвони близькій людині.",
-    "Випий 2 літри води.",
-    "Вивчи 5 нових англійських слів.",
-    "Напиши план на завтра.",
-    "Поприбирай на робочому столі.",
-    "Відпочинь без телефона 30 хвилин."
-]
+from telegram import Update, ReplyKeyboardMarkup
+from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, ContextTypes
 
 # Мотиваційні цитати
 quotes = [
-    "Ти зможеш, якщо будеш старатися!",
-    "Не бігай за успіхом. Стань успіхом!",
-    "Труднощі — це сходи до успіху.",
-    "Ніколи не здавайся!",
-    "Великий успіх починається з маленьких кроків."
+    "Сьогодні — ідеальний день почати щось нове.",
+    "Навіть маленький крок — це прогрес.",
+    "Успіх приходить до тих, хто не здається.",
+    "Твоя енергія — твоя суперсила!",
+    "Ти можеш більше, ніж думаєш."
 ]
 
-# Список мотиваційних фраз
-motivations = [
-    "Кожен день — це шанс зробити крок до своїх мрій.",
-    "Не бійся програти. Бійся не спробувати.",
-    "Ти здатен на більше, ніж думаєш.",
-    "Все, що тобі потрібно для успіху — це віра в себе.",
-    "Крок за кроком, ти досягнеш мети!"
+# Челенджі
+challenges = [
+    "💧 Випий 2 л води сьогодні.",
+    "🚶 Пройди 8000 кроків.",
+    "📵 Вимкни телефон на 1 годину.",
+    "📚 Почитай 10 сторінок книги.",
+    "🧘‍♀️ Зроби 5 хвилин медитації або дихання."
 ]
 
-# Функція для команди /start
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text('Привіт! Я твій помічник. Що зробимо сьогодні?')
-
-# Функція для команди /motivation
-async def motivation(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    selected_motivation = random.choice(motivations)
-    await update.message.reply_text(f"Мотиваційна фраза: {selected_motivation}")
-
-# Функція для команди /quote
-async def quote(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    selected_quote = random.choice(quotes)
-    await update.message.reply_text(f"Цитата на сьогодні: {selected_quote}")
-
-# Функція для команди /challenge
-async def challenge(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    selected_challenge = random.choice(challenges)
-    await update.message.reply_text(f"Твій челендж на сьогодні:\n\n{selected_challenge}")
-
-# Створюємо додаток і додаємо хендлери для кожної команди
-app = ApplicationBuilder().token('7938270207:AAHUYWrqzNBv5DuoY6KsfJ7vDBF2GJ4dRjA').build()
-
-
-
-from datetime import datetime
-from telegram import Update
-from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
-
-# Переклад назв днів
+# Українські дні тижня
 ua_days = {
     "Monday": "Понеділок", "Tuesday": "Вівторок", "Wednesday": "Середа",
     "Thursday": "Четвер", "Friday": "П’ятниця", "Saturday": "Субота", "Sunday": "Неділя"
 }
 
-# Функція для визначення графіка роботи
+# Робочий графік
 def get_work_schedule():
     today = datetime.now()
-    date_limit = datetime(today.year, 4, 21)  # після 20 квітня — нічних змін нема
+    date_limit = datetime(today.year, 4, 21)
     dow = ua_days[today.strftime("%A")]
     if today < date_limit and dow in ["Середа", "Четвер", "П’ятниця", "Субота", "Неділя"]:
         return "Нічна зміна 20:00–08:00"
     else:
         return "Сьогодні вихідний або зміна ще не визначена"
-# Функція для розкладу автобуса
+
+# Автобус
 def get_bus_time():
     return "🚍 Автобус:\n1-а зміна: 04:35\n2-а зміна: 16:38"
 
-# Функція чергувань за датою
+# Чергування
 def get_shift():
     today = datetime.now().date()
     if datetime(2025, 4, 28).date() <= today <= datetime(2025, 5, 4).date():
@@ -94,35 +54,45 @@ def get_shift():
     else:
         return "Чергувань на цю дату не заплановано"
 
-# Команди бота
-async def work(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    day = ua_days[datetime.now().strftime("%A")]
-    schedule = get_work_schedule()
-    await update.message.reply_text(f"📅 Сьогодні: {day}\n🕒 {schedule}")
+# Меню кнопок
+main_menu = ReplyKeyboardMarkup(
+    [
+        ["🕒 Робота", "🚍 Автобус"],
+        ["👩‍⚕️ Чергування", "💬 Цитата"],
+        ["💪 Челендж"]
+    ],
+    resize_keyboard=True
+)
 
-async def bus(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text(get_bus_time())
+# Команда /start — меню
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text(
+        "Привіт! Обери опцію з меню 👇",
+        reply_markup=main_menu
+    )
 
-async def shift(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text(get_shift())
-# Додаємо хендлери
+# Обробка кнопок
+# Обробка кнопок з постійним меню
+async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    text = update.message.text
+    if text == "🕒 Робота":
+        day = ua_days[datetime.now().strftime("%A")]
+        response = f"📅 Сьогодні: {day}\n🕒 {get_work_schedule()}"
+    elif text == "🚍 Автобус":
+        response = get_bus_time()
+    elif text == "👩‍⚕️ Чергування":
+        response = get_shift()
+    elif text == "💬 Цитата":
+        response = random.choice(quotes)
+    elif text == "💪 Челендж":
+        response = random.choice(challenges)
+    else:
+        response = "Я не зрозумів 🧐 Обери щось із меню."
+
+    await update.message.reply_text(response, reply_markup=main_menu)
+
+# Запуск бота
+app = ApplicationBuilder().token(os.environ['7938270207:AAHUYWrqzNBv5DuoY6KsfJ7vDBF2GJ4dRjA']).build()
 app.add_handler(CommandHandler('start', start))
-app.add_handler(CommandHandler('motivation', motivation))
-app.add_handler(CommandHandler('quote', quote))
-app.add_handler(CommandHandler('challenge', challenge))
-app.add_handler(CommandHandler('work', work))
-app.add_handler(CommandHandler('bus', bus))
-app.add_handler(CommandHandler('shift', shift))
-# Запускаємо бота
+app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
 app.run_polling()
-
-
-app.run_polling()
-print("Бот запущено.")
-app.run_polling()
-print("Бот запущено.")
-app.run_polling()
-
-
-
-
